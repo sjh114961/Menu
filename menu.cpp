@@ -1,3 +1,4 @@
+
 /*********************************************************************
 * Menu system for Arduino code file
 *
@@ -21,11 +22,16 @@
 command_type command_record[MAX_MENU_ITEMS];
 
 #endif
-int select = 0;
-int previousSelect = -1;
+int select = 0;  // used for menu selection
+
+// set to -1 to show that nothing has been set as yet
+int previousSelect = -1;  // previous menu selection
+
+// strcture to store data need for command repeation
 repeat_type repeatData;
 
-//void menu(command_type *command_record) {
+// main menu engine, select tells it what menu
+// to display. select = 0 id th the 1st or main menu
 int menu(int select) {
 
   char c;
@@ -35,14 +41,10 @@ int menu(int select) {
   int data;
   int index = 0;
   int returned_value = -1;
-  bool menu_up = 0;
-
-
-
-  //  previousSelect = -1;  // set to -1 to show that nothing has been set as yet
+  //  bool menu_up = 0;
 
   /* This the wrapper for the array since all fuction have to be the same.
-If the parameter isn't needed then just put anything in there as a place holder
+*  If the parameter isn't needed then just put anything in there as a place holder
 * and it will be ignored. In most cases there is no return value so the  wrapper
 * needs to return NO_RETURN or any negative number. If a postivr number is 
 * returned the value will be displayed.
@@ -58,6 +60,7 @@ in each array must be NULL
   if (previousSelect != select) {
     initialize_main_menu(select);
     previousSelect = select;
+
     /*    
     Serial.print("Menu Initialized: ");
     Serial.print(previousSelect);
@@ -79,9 +82,9 @@ in each array must be NULL
     Serial.println(data);
 #endif
 
-    c = Serial.read();
-    p1 = Serial.parseInt();
-    p2 = Serial.parseInt();
+    c = Serial.read();        // command
+    p1 = Serial.parseInt();   // 1st parameter of command
+    p2 = Serial.parseInt();   // 2nd parameter of command
 
 #ifdef DEBUG
     Serial.print("The char was ");
@@ -122,7 +125,7 @@ in each array must be NULL
   Serial.println(&foo);
 */
 
-  if (foo != NULL) {
+  if (foo != NULL) {    // if there is a commag available
     if (foo == help) {
       //      Serial.print("help found: ");
       p1 = select;
@@ -133,25 +136,36 @@ in each array must be NULL
       Serial.print("Returned value: ");
       Serial.println(returned_value);
     }
-    foo = NULL;
+    foo = NULL; // reset for next command
   }
 
   //  Serial.println("End");
   return (select);
 }
 
-
+// menu wrapper for digitalWrite
 int gpio_write(int pin, int value) {
   pinMode(pin, OUTPUT);
   digitalWrite(pin, value);
   return (NO_RETURN);
 }
 
+// menu wrapper fir digitalRead
+int gpio_Read(int pin, int value){
+  int data = NO_RETURN;
+
+  pinMode(pin, INPUT);
+  data = digitalRead(pin);
+  return (data);
+}
+
+// menu wrapper for analogWrite
 int pwm(int p1, int p2) {
   analogWrite(p1, p2);
   return (NO_RETURN);
 }
 
+// menu wrapper for analog_read
 int analog_read(int pin, int value) {
   int returned_value = NO_RETURN;
   returned_value = analogRead(pin);
@@ -161,17 +175,18 @@ int analog_read(int pin, int value) {
 // This function documents all viable commands.
 int help(int p1, int p2) {
   switch (p1) {
-    case 0:
+    case 0: // main menu
       Serial.println("        MENU:");
       Serial.println("h: print this menu");
       Serial.println("d: digitalwrite(p1,p2) example:d2,1");
+      Serial.println("D: digitalRead(p1,p2) example:d2,anything");
       Serial.println("p: PWM(pin, dutysysle(0-255)) example:p3,128");
       Serial.println("a: analogRead(pin, anything) example:a3,128");
       Serial.println("m: repeat submenu");
       Serial.println("");
       break;
 
-    case 1:
+    case 1: // repeat menu
       Serial.println("  Repeat MENU:");
       Serial.println("h: print this menu");
       Serial.println("t: Set interval time in millisecds (t1000, anything)");
@@ -196,26 +211,36 @@ int repeatMenu(int p1, int p2) {
 */
   return (NO_RETURN);
 }
+
+// literally does nothing
 int doNothing(int p1, int p2) {
   return (NO_RETURN);
 }
 
+// exit sub menu and return to main menu
 int exitSubMenu(int p1, int p2) {
   select = 0;
+
+/*
   Serial.print("exitSubMenu: ");
   Serial.print(p1);
   Serial.print(" ");
   Serial.println(select);
   Serial.println("");
+*/
   return (NO_RETURN);
 }
 
+// Sets repeat interval
 int setInterval(int p1, int p2) {
   repeatData.interval = p1;
   Serial.print("SetInterval: ");
   Serial.println(p1);
+  
   return (NO_RETURN);
 }
+
+// Sets repeat parameters
 int setParms(int p1, int p2) {
   repeatData.p1 = p1;
   repeatData.p2 = p2;
@@ -226,6 +251,7 @@ int setParms(int p1, int p2) {
   return (NO_RETURN);
 }
 
+// Display all repeat dara
 int displayRepeat(int p1, int p2) {
   String buffer;
 
@@ -262,9 +288,11 @@ int commandRepeat(int p1, int p2) {
   return (NO_RETURN);
 }
 
+// Actually this function now initializes all menus
+// select=0 for main menu
 void initialize_main_menu(int select) {
-  int index = 0; 
-  
+  int index = 0;
+
   /*  
   Serial.print("initialize_main_menu select: ");
   Serial.println(select);
@@ -274,14 +302,17 @@ void initialize_main_menu(int select) {
     case 0:
       //      Serial.println("Menu 0");
 
-      Serial.print("Index: ");
-      Serial.println(index);
+      command_record[index].menu_command = 'h';
+      command_record[index++].menu_function = &help;
 
       command_record[index].menu_command = 'd';
       command_record[index++].menu_function = &gpio_write;
 
-      command_record[index].menu_command = 'h';
-      command_record[index++].menu_function = &help;
+      command_record[index].menu_command = 'D';
+      command_record[index++].menu_function = &gpio_Read;
+
+      command_record[index].menu_command = 'd';
+      command_record[index++].menu_function = &gpio_write;
 
       command_record[index].menu_command = 'p';
       command_record[index++].menu_function = &pwm;
@@ -297,10 +328,6 @@ void initialize_main_menu(int select) {
       break;
 
     case 1:
-      Serial.println("Menu 1");
-      Serial.print("Index: ");
-      Serial.println(index);
-
       command_record[index].menu_command = 'h';
       command_record[index++].menu_function = &help;
 
@@ -324,9 +351,6 @@ void initialize_main_menu(int select) {
 
       break;
   }
-
-  Serial.print("End Index: ");
-  Serial.println(index);
 
   help(select, 0);
 }
