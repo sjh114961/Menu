@@ -19,6 +19,13 @@ void setup() {
   previousSelect = -1;
   digitalWrite(LED_BUILTIN, HIGH);
 //  help(0, 0); 
+
+  repeatData.interval = 0;
+  repeatData.testTime = 0;
+  repeatData.responseString = "The repeated reponse was : ";
+  repeatData.Function = &doNothing;
+  repeatData.p1 = 0;
+  repeatData.p2 = 0;
 }
 
 void loop() {

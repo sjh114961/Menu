@@ -33,6 +33,20 @@ typedef struct
   int (*menu_function)(int, int);
 } command_type;
 
+typedef struct
+{
+  unsigned long interval;
+  unsigned long testTime;
+  String responseString;
+  String command;
+  int (*Function)(int, int);
+  int p1;
+  int p2;
+
+
+} repeat_type;
+
+extern repeat_type repeatData;
 
 //command_type command_record[6] = { { 'd', &gpio_write }, { 'h', &help }, { 'p', &pwm }, { 'a', &analog_read }, { NULL, NULL } };
 
@@ -50,6 +64,9 @@ int pwm(int p1, int p2);
 int analog_read(int pin, int value);
 int repeatMenu(int p1, int p2);
 int exitSubMenu(int p1, int p2);
+int doNothing(int p1, int p2);
+int setParms(int p1, int p2);
+int displayRepeat(int p1, int p2);
 
 void initialize_main_menu(int select);
 

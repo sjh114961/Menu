@@ -23,6 +23,7 @@ command_type command_record[MAX_MENU_ITEMS];
 #endif
 int select = 0;
 int previousSelect = -1;
+repeat_type repeatData;
 
 //void menu(command_type *command_record) {
 int menu(int select) {
@@ -35,6 +36,8 @@ int menu(int select) {
   int index = 0;
   int returned_value = -1;
   bool menu_up = 0;
+
+
 
   //  previousSelect = -1;  // set to -1 to show that nothing has been set as yet
 
@@ -121,9 +124,9 @@ in each array must be NULL
 
   if (foo != NULL) {
     if (foo == help) {
-//      Serial.print("help found: ");
+      //      Serial.print("help found: ");
       p1 = select;
-//     Serial.println(p1);
+      //     Serial.println(p1);
     }
     returned_value = foo(p1, p2);
     if (returned_value != NO_RETURN) {
@@ -171,8 +174,10 @@ int help(int p1, int p2) {
     case 1:
       Serial.println("  Repeat MENU:");
       Serial.println("h: print this menu");
-      Serial.println("y: PWM(pin, dutysysle(0-255)) example:p3,128");
-      Serial.println("z: analogRead(pin, anything) example:a3,128");
+      Serial.println("t: Set interval time in millisecds (t1000, anything)");
+      Serial.println("p: Set repeat function parameters");
+      Serial.println("c: Set repeat function command");
+      Serial.println("d: display repeat function parameters");
       Serial.println("x: exit submenu");
       Serial.println("");
       break;
@@ -180,14 +185,18 @@ int help(int p1, int p2) {
   return (NO_RETURN);
 }
 
+// Sets menu system to display 1st sub menu (repeat menu)
 int repeatMenu(int p1, int p2) {
   select = 1;
-/*  
+  /*  
   Serial.print("repeatMenu: ");
   Serial.print(p1);
   Serial.print(" ");
   Serial.println(select);
 */
+  return (NO_RETURN);
+}
+int doNothing(int p1, int p2) {
   return (NO_RETURN);
 }
 
@@ -197,55 +206,127 @@ int exitSubMenu(int p1, int p2) {
   Serial.print(p1);
   Serial.print(" ");
   Serial.println(select);
+  Serial.println("");
+  return (NO_RETURN);
+}
+
+int setInterval(int p1, int p2) {
+  repeatData.interval = p1;
+  Serial.print("SetInterval: ");
+  Serial.println(p1);
+  return (NO_RETURN);
+}
+int setParms(int p1, int p2) {
+  repeatData.p1 = p1;
+  repeatData.p2 = p2;
+  Serial.print("setParms: ");
+  Serial.print(p1);
+  Serial.print(" ");
+  Serial.println(p2);
+  return (NO_RETURN);
+}
+
+int displayRepeat(int p1, int p2) {
+  String buffer;
+
+  Serial.println("     Repeat Data");
+
+  buffer = "Interval: ";
+  buffer += repeatData.interval;
+  Serial.println(buffer);
+  buffer = "Parameter 1: ";
+  buffer += repeatData.p1;
+  buffer += "\r\n";
+  buffer += "Parameter 2: ";
+  buffer += repeatData.p2;
+  Serial.println(buffer);
+  Serial.print("Command: ");
+  Serial.println(repeatData.command);
+
+  return (NO_RETURN);
+}
+
+int commandRepeat(int p1, int p2) {
+  String buffer;
+
+  Serial.print("Enter Command to repeat: ");
+  Serial.flush();
+  Serial.setTimeout(10000);
+  buffer = Serial.readStringUntil('\n');
+  Serial.setTimeout(1000);
+  Serial.print("Command: ");
+  Serial.println(buffer);
+
+  repeatData.command = buffer;
+
   return (NO_RETURN);
 }
 
 void initialize_main_menu(int select) {
-/*  
+  int index = 0; 
+  
+  /*  
   Serial.print("initialize_main_menu select: ");
   Serial.println(select);
-*/
+ */
   switch (select) {
+
     case 0:
-//      Serial.println("Menu 0");
+      //      Serial.println("Menu 0");
 
-      command_record[0].menu_command = 'd';
-      command_record[0].menu_function = &gpio_write;
+      Serial.print("Index: ");
+      Serial.println(index);
 
-      command_record[1].menu_command = 'h';
-      command_record[1].menu_function = &help;
+      command_record[index].menu_command = 'd';
+      command_record[index++].menu_function = &gpio_write;
 
-      command_record[2].menu_command = 'p';
-      command_record[2].menu_function = &pwm;
+      command_record[index].menu_command = 'h';
+      command_record[index++].menu_function = &help;
 
-      command_record[3].menu_command = 'a';
-      command_record[3].menu_function = &analog_read;
+      command_record[index].menu_command = 'p';
+      command_record[index++].menu_function = &pwm;
 
-      command_record[4].menu_command = 'm';
-      command_record[4].menu_function = &repeatMenu;
+      command_record[index].menu_command = 'a';
+      command_record[index++].menu_function = &analog_read;
 
-      command_record[5].menu_command = NULL;
-      command_record[5].menu_function = NULL;
+      command_record[index].menu_command = 'm';
+      command_record[index++].menu_function = &repeatMenu;
+
+      command_record[index].menu_command = NULL;
+      command_record[index++].menu_function = NULL;
       break;
+
     case 1:
-//      Serial.println("Menu 1");
+      Serial.println("Menu 1");
+      Serial.print("Index: ");
+      Serial.println(index);
 
-      command_record[0].menu_command = 'h';
-      command_record[0].menu_function = &help;
+      command_record[index].menu_command = 'h';
+      command_record[index++].menu_function = &help;
 
-      command_record[1].menu_command = 'y';
-      command_record[1].menu_function = &pwm;
+      command_record[index].menu_command = 't';
+      command_record[index++].menu_function = &setInterval;
 
-      command_record[2].menu_command = 'z';
-      command_record[2].menu_function = &analog_read;
+      command_record[index].menu_command = 'p';
+      command_record[index++].menu_function = &setParms;
 
-      command_record[3].menu_command = 'x';
-      command_record[3].menu_function = &exitSubMenu;
+      command_record[index].menu_command = 'c';
+      command_record[index++].menu_function = &commandRepeat;
 
-      command_record[4].menu_command = NULL;
-      command_record[4].menu_function = NULL;
+      command_record[index].menu_command = 'd';
+      command_record[index++].menu_function = &displayRepeat;
+
+      command_record[index].menu_command = 'x';
+      command_record[index++].menu_function = &exitSubMenu;
+
+      command_record[index].menu_command = NULL;
+      command_record[index++].menu_function = NULL;
 
       break;
   }
+
+  Serial.print("End Index: ");
+  Serial.println(index);
+
   help(select, 0);
 }
