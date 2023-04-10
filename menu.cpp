@@ -29,6 +29,10 @@ int previousSelect = -1;  // previous menu selection
 
 // strcture to store data need for command repeation
 repeat_type repeatData;
+char c;
+long p1 = 0;
+long p2 = 0;
+
 
 // main menu engine, select tells it what menu
 // to display. select = 0 id th the 1st or main menu
@@ -41,7 +45,10 @@ int menu(int select) {
   int data;
   int index = 0;
   int returned_value = -1;
-  //  bool menu_up = 0;
+  unsigned long currentTime;
+  unsigned long next_interval;
+
+  bool interval_up = FALSE;
 
   /* This the wrapper for the array since all fuction have to be the same.
 *  If the parameter isn't needed then just put anything in there as a place holder
@@ -56,51 +63,98 @@ int menu(int select) {
 in each array must be NULL
 */
 
+  foo = NULL;
   // if we are not showing the main main menu, change to it
   if (previousSelect != select) {
     initialize_main_menu(select);
     previousSelect = select;
 
+
+    delay(1000);
     /*    
     Serial.print("Menu Initialized: ");
     Serial.print(previousSelect);
     Serial.print(" ");
     Serial.println(select);
-*/
+    */
   }
+
+  if (repeatData.interval != 0L) {
+    currentTime = micros();
+    next_interval = currentTime + repeatData.interval;
+
+    if (currentTime > next_interval) {
+      interval_up = TRUE;
+      currentTime = micros();
+      next_interval = currentTime + repeatData.interval;
+    }
+  }
+  // is there any command input?
   data = Serial.available();
   /*
   Serial.print("data: ");
   Serial.println(data);
 */
+  /*
+  Serial.print("interval_up: ");
+  Serial.print(interval_up);
+  Serial.print(" ");
+  if (interval_up) {
+    Serial.println("TRUE");
+  } else {
+    Serial.println("FALSE");
+  }
+*/
 
+
+  //  if ((data > 0) || interval_up) {
   if (data > 0) {
     index = 0;
 
-#ifdef DEBUG
     Serial.print("data: ");
     Serial.println(data);
+
+    Serial.print("interval_up: ");
+    Serial.println(interval_up);
+
+    delay(1000);
+
+    if (!interval_up) {
+#ifdef DEBUG
+      Serial.print("data: ");
+      Serial.println(data);
 #endif
 
-    c = Serial.read();        // command
-    p1 = Serial.parseInt();   // 1st parameter of command
-    p2 = Serial.parseInt();   // 2nd parameter of command
+      c = Serial.read();       // command
+      p1 = Serial.parseInt();  // 1st parameter of command
+      p2 = Serial.parseInt();  // 2nd parameter of command
 
 #ifdef DEBUG
-    Serial.print("The char was ");
-    Serial.print(c);
-    Serial.print(" Parameters: ");
-    Serial.print(p1);
-    Serial.print(" ");
-    Serial.println(p2);
+      Serial.print("The char was ");
+      Serial.print(c);
+      Serial.print(" Parameters: ");
+      Serial.print(p1);
+      Serial.print(" ");
+      Serial.println(p2);
 #endif
 
-    //Serial.flush();
-    Serial.readString();
-  } else {
-    c = 255;
+      //Serial.flush();
+      Serial.readString();
+    } else {
+      c = 255;
+    }
+    /*  
+  if (interval_up) {
+    c = repeatData.commandChar;
+    p1 = repeatData.p1;
+    p2 = repeatData.p2;
   }
+  */
 
+
+//  }  //WAS HERE
+
+  delay(1000);
   foo = NULL;
 
   //Serial.println("Start");
@@ -116,32 +170,77 @@ in each array must be NULL
     }
   } while (command_record[index++].menu_command != NULL);
 
-  /*
-  Serial.print("foo= ");
-  Serial.print(foo);
-  Serial.print(" ");
-  Serial.print(*foo);
-  Serial.print(" ");
-  Serial.println(&foo);
-*/
+}  // moved here
 
-  if (foo != NULL) {    // if there is a commag available
-    if (foo == help) {
-      //      Serial.print("help found: ");
-      p1 = select;
-      //     Serial.println(p1);
-    }
-    returned_value = foo(p1, p2);
-    if (returned_value != NO_RETURN) {
-      Serial.print("Returned value: ");
-      Serial.println(returned_value);
-    }
-    foo = NULL; // reset for next command
+
+if (foo != NULL) {  // if there is a commag available
+  if (foo == help) {
+    //      Serial.print("help found: ");
+    p1 = select;
+    //     Serial.println(p1);
   }
+  if (foo != NULL) {
+    /*      
+      Serial.println("Line: 177");
+      delay(1000);
 
-  //  Serial.println("End");
-  return (select);
+      Serial.print("returned_value = foo(p1, p2);");
+*/
+#ifdef LINE_DEBUG
+    Serial.print("FILE: ");
+    Serial.print(__FILE__);
+    Serial.print(" Line: ");
+    Serial.println(__LINE__);
+#endif
+
+    returned_value = foo(p1, p2);
+  }
+/*
+ if (returned_value != NO_RETURN) {
+    Serial.print("Returned value: ");
+    Serial.println(returned_value);
+  }
+*/  
+  foo = NULL;  // reset for next command
 }
+if (foo != NULL) {
+#ifdef LINE_DEBUG
+  Serial.print("FILE: ");
+  Serial.print(__FILE__);
+  Serial.print(" Line: ");
+  Serial.println(__LINE__);
+#endif
+  delay(1000);
+
+  returned_value = foo(p1, p2);
+}
+
+if (returned_value != NO_RETURN) {
+#ifdef LINE_DEBUG
+  Serial.print("FILE: ");
+  Serial.print(__FILE__);
+  Serial.print(" Line: ");
+  Serial.println(__LINE__);
+#endif
+
+  Serial.print("Returned value: ");
+  Serial.println(returned_value);
+}
+/*
+#ifdef LINE_DEBUG
+Serial.print("FILE: ");
+Serial.print(__FILE__);
+Serial.print(" Line: ");
+Serial.println(__LINE__);
+#endif
+*/
+foo = NULL;  // reset for next command}
+
+//  Serial.println("End");
+
+return (select);
+}
+
 
 // menu wrapper for digitalWrite
 int gpio_write(int pin, int value) {
@@ -151,7 +250,7 @@ int gpio_write(int pin, int value) {
 }
 
 // menu wrapper fir digitalRead
-int gpio_Read(int pin, int value){
+int gpio_Read(int pin, int value) {
   int data = NO_RETURN;
 
   pinMode(pin, INPUT);
@@ -168,6 +267,7 @@ int pwm(int p1, int p2) {
 // menu wrapper for analog_read
 int analog_read(int pin, int value) {
   int returned_value = NO_RETURN;
+  int data;
   returned_value = analogRead(pin);
   return (returned_value);
 }
@@ -175,7 +275,7 @@ int analog_read(int pin, int value) {
 // This function documents all viable commands.
 int help(int p1, int p2) {
   switch (p1) {
-    case 0: // main menu
+    case 0:  // main menu
       Serial.println("        MENU:");
       Serial.println("h: print this menu");
       Serial.println("d: digitalwrite(p1,p2) example:d2,1");
@@ -186,7 +286,7 @@ int help(int p1, int p2) {
       Serial.println("");
       break;
 
-    case 1: // repeat menu
+    case 1:  // repeat menu
       Serial.println("  Repeat MENU:");
       Serial.println("h: print this menu");
       Serial.println("t: Set interval time in millisecds (t1000, anything)");
@@ -221,7 +321,7 @@ int doNothing(int p1, int p2) {
 int exitSubMenu(int p1, int p2) {
   select = 0;
 
-/*
+  /*
   Serial.print("exitSubMenu: ");
   Serial.print(p1);
   Serial.print(" ");
@@ -235,8 +335,9 @@ int exitSubMenu(int p1, int p2) {
 int setInterval(int p1, int p2) {
   repeatData.interval = p1;
   Serial.print("SetInterval: ");
-  Serial.println(p1);
-  
+  Serial.println((unsigned)p1);
+  Serial.println("");
+
   return (NO_RETURN);
 }
 
@@ -248,6 +349,7 @@ int setParms(int p1, int p2) {
   Serial.print(p1);
   Serial.print(" ");
   Serial.println(p2);
+  Serial.println("");
   return (NO_RETURN);
 }
 
@@ -258,7 +360,10 @@ int displayRepeat(int p1, int p2) {
   Serial.println("     Repeat Data");
 
   buffer = "Interval: ";
-  buffer += repeatData.interval;
+  buffer += (unsigned)repeatData.interval;
+  Serial.println(buffer);
+  buffer = "Command: ";
+  buffer += repeatData.commandChar;
   Serial.println(buffer);
   buffer = "Parameter 1: ";
   buffer += repeatData.p1;
@@ -266,25 +371,55 @@ int displayRepeat(int p1, int p2) {
   buffer += "Parameter 2: ";
   buffer += repeatData.p2;
   Serial.println(buffer);
-  Serial.print("Command: ");
-  Serial.println(repeatData.command);
+  Serial.println("");
 
   return (NO_RETURN);
 }
 
 int commandRepeat(int p1, int p2) {
-  String buffer;
+  //  String buffer;
+  int count = 0;
+  bool skip = FALSE;
 
   Serial.print("Enter Command to repeat: ");
   Serial.flush();
-  Serial.setTimeout(10000);
-  buffer = Serial.readStringUntil('\n');
-  Serial.setTimeout(1000);
-  Serial.print("Command: ");
-  Serial.println(buffer);
+  Serial.setTimeout(3000);
 
-  repeatData.command = buffer;
+  //  delay(1000);
 
+
+  while (!Serial.available()) {
+    delay(100);
+    count++;
+    if (count > COMMAND_WAIT) {
+      Serial.println("Timeout");
+      skip = TRUE;
+      break;
+    }
+  }
+  if (skip) {
+    repeatData.commandChar = Serial.read();  // command function
+    repeatData.p1 = Serial.parseInt();       // 1st parameter of command
+    repeatData.p2 = Serial.parseInt();       // 2nd parameter of command
+
+    /*buffer = Serial.readStringUntil('\n');
+    Serial.setTimeout(1000);
+    Serial.print("Command: ");
+    Serial.println(buffer);
+
+    repeatData.command = buffer;
+    */
+
+    Serial.println("");
+    Serial.print("command: ");
+    Serial.print(repeatData.commandChar);
+    Serial.print(repeatData.p1);
+    Serial.print(" ");
+    Serial.println(repeatData.p2);
+  }
+
+  Serial.setTimeout(RECEIVE_TIMEOUT);
+  Serial.println("");
   return (NO_RETURN);
 }
 

@@ -11,21 +11,31 @@
 #include "menu.h"
 
 void setup() {
+  String buffer = "t1000 9";
+
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println("Code Started: ");
 
   select = 0;  // select main menu
   previousSelect = -1;
+
+#ifdef LINE_DEBUG
+  Serial.print("FILE: "); Serial.print(__FILE__); Serial.print(" Line: ");  Serial.println(__LINE__);
+#endif
+
+  Serial.setTimeout(RECEIVE_TIMEOUT);
   digitalWrite(LED_BUILTIN, HIGH);
 //  help(0, 0); 
 
+  repeatData.count = 0;
   repeatData.interval = 0;
-  repeatData.testTime = 0;
   repeatData.responseString = "The repeated reponse was : ";
-  repeatData.Function = &doNothing;
   repeatData.p1 = 0;
   repeatData.p2 = 0;
+
+//parseString(buffer, &c, &p1, &p2); 
+
 }
 
 void loop() {

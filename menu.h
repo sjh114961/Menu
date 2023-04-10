@@ -14,12 +14,24 @@
 
 #include <Arduino.h>
 #define MAX_MENU_ITEMS 10
+#define MAX_COMMAND_LENGTH 10
+#define COMMAND_WAIT 100  // 1= 100 millisec
+#define RECEIVE_TIMEOUT 100L
 
 #ifndef MENU_SELECT
 #define MENU_SELECT
 extern int select;
 extern int previousSelect;
 #endif
+
+#define FALSE 0
+#define TRUE 1
+
+//void parseString(String theString, char &c, int &p1, int &p2);
+
+extern  char c;
+extern  long p1;
+extern  long p2;
 
 
 int gpio_write(int pin, int value);
@@ -35,15 +47,13 @@ typedef struct
 
 typedef struct
 {
-  unsigned long interval;
-  unsigned long testTime;
-  String responseString;
-  String command;
-  int (*Function)(int, int);
-  int p1;
-  int p2;
-
-
+  int count;                // # of times to repeat
+  unsigned long interval;   // time between execution in ms.
+  String responseString;    // String to use for response
+  String command;           // input command string, pre-parse
+  char commandChar;         // command to execute see help
+  int p1;                   // 1st parameter for command
+  int p2;                   // 2nd parameter fot command
 } repeat_type;
 
 extern repeat_type repeatData;
@@ -56,6 +66,7 @@ extern repeat_type repeatData;
 #define NO_RETURN -1
 
 //#define DEBUG
+//#define LINE_DEBUG 
 
 int menu(int select);
 int help(int p1, int p2);
