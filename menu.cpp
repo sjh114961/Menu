@@ -379,7 +379,7 @@ int displayRepeat(int p1, int p2) {
 int commandRepeat(int p1, int p2) {
   //  String buffer;
   int count = 0;
-  bool skip = FALSE;
+  bool noSkip = FALSE;
 
   Serial.print("Enter Command to repeat: ");
   Serial.flush();
@@ -389,15 +389,16 @@ int commandRepeat(int p1, int p2) {
 
 
   while (!Serial.available()) {
+    noSkip = TRUE;
     delay(100);
     count++;
     if (count > COMMAND_WAIT) {
       Serial.println("Timeout");
-      skip = TRUE;
+      noSkip = FALSE;
       break;
     }
   }
-  if (skip) {
+  if (noSkip) {
     repeatData.commandChar = Serial.read();  // command function
     repeatData.p1 = Serial.parseInt();       // 1st parameter of command
     repeatData.p2 = Serial.parseInt();       // 2nd parameter of command
