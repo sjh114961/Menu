@@ -47,6 +47,7 @@ typedef struct
 
 typedef struct
 {
+  bool activated;           // turn on repeat
   int count;                // # of times to repeat
   unsigned long interval;   // time between execution in ms.
   String responseString;    // String to use for response

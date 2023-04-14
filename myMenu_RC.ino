@@ -28,6 +28,7 @@ void setup() {
   digitalWrite(LED_BUILTIN, HIGH);
 //  help(0, 0); 
 
+  repeatData.activated = FALSE;
   repeatData.count = 0;
   repeatData.interval = 0;
   repeatData.responseString = "The repeated reponse was : ";
