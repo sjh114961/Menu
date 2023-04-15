@@ -21,12 +21,14 @@ void setup() {
   previousSelect = -1;
 
 #ifdef LINE_DEBUG
-  Serial.print("FILE: "); Serial.print(__FILE__); Serial.print(" Line: ");  Serial.println(__LINE__);
+  Serial.print("FILE: ");
+  Serial.print(__FILE__);
+  Serial.print(" Line: ");
+  Serial.println(__LINE__);
 #endif
 
   Serial.setTimeout(RECEIVE_TIMEOUT);
   digitalWrite(LED_BUILTIN, HIGH);
-//  help(0, 0); 
 
   repeatData.activated = FALSE;
   repeatData.count = 0;
@@ -34,26 +36,9 @@ void setup() {
   repeatData.responseString = "The repeated reponse was : ";
   repeatData.p1 = 0;
   repeatData.p2 = 0;
+  }
 
-//parseString(buffer, &c, &p1, &p2); 
-
-}
-
-void loop() {
-  //command_type command_record[6] = { { 'd', &gpio_write }, { 'h', &help }, { 'p', &pwm }, { 'a', &analog_read }, { NULL, NULL } };
-
-  previousSelect = menu(select);
-/*
-  delay(1000);
-      
-    Serial.print("select != previousSelect ");
-    Serial.print(previousSelect);
-    Serial.print(" ");
-    Serial.println(select);
+  void loop() {
 
     previousSelect = menu(select);
-    delay(1000);
-*/  
-
-}
-
+   }

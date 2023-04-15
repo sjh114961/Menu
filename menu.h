@@ -38,6 +38,7 @@ int gpio_write(int pin, int value);
 int pwm(int p1, int p2);
 int analog_read(int pin, int value);
 int help(int p1, int p2);
+int echoFunction(int p1, int p2);
 
 typedef struct
 {
@@ -58,7 +59,7 @@ typedef struct
 } repeat_type;
 
 extern repeat_type repeatData;
-
+extern bool echo;
 //command_type command_record[6] = { { 'd', &gpio_write }, { 'h', &help }, { 'p', &pwm }, { 'a', &analog_read }, { NULL, NULL } };
 
 

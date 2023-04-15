@@ -33,6 +33,8 @@ char c;
 long p1 = 0;
 long p2 = 0;
 
+bool echo = FALSE;  // echo commands input. This will slow down code,
+
 
 // main menu engine, select tells it what menu
 // to display. select = 0 id th the 1st or main menu
@@ -90,9 +92,9 @@ in each array must be NULL
 
   if (repeatData.count <= 0) {
     repeatData.activated = FALSE;
-/*    Serial.println("ACTIVE IS FALSE");
+    /*    Serial.println("ACTIVE IS FALSE");
     delay(5000);
-*/    
+*/
   }
   // is there any command input?
   data = Serial.available();
@@ -113,7 +115,8 @@ in each array must be NULL
     Serial.println(repeatData.activated);
 #endif
 
-    delay(1000);
+    //    delay(1000);
+    delay(100);
 
     //    if (!interval_up) {
     if (!repeatData.activated) {
@@ -127,6 +130,15 @@ in each array must be NULL
       p1 = Serial.parseInt();  // 1st parameter of command
       p2 = Serial.parseInt();  // 2nd parameter of command
 
+      if (echo) {
+        if (isAlpha(c)) {
+          Serial.print(c);
+          Serial.print(p1);
+          Serial.print(" ");
+          Serial.println(p2);
+        }
+      }
+
 #ifdef DEBUG
       Serial.print("The char was ");
       Serial.print(c);
@@ -139,14 +151,6 @@ in each array must be NULL
       //Serial.flush();
       Serial.readString();
     } else
-      /*    
-    {
-      c = 255;
-    }
-*/
-
-
-      //  }  //WAS HERE
 
       delay(1000);
     foo = NULL;
@@ -271,6 +275,14 @@ int analog_read(int pin, int value) {
   return (returned_value);
 }
 
+int echoFunction(int p1, int p2) {
+  echo = p1;
+  Serial.print("ECHO: ");
+  Serial.println(echo);
+
+  return (NO_RETURN);
+}
+
 // This function documents all viable commands.
 int help(int p1, int p2) {
   switch (p1) {
@@ -281,6 +293,7 @@ int help(int p1, int p2) {
       Serial.println("D: digitalRead(p1,p2) example:d2,anything");
       Serial.println("p: PWM(pin, dutysysle(0-255)) example:p3,128");
       Serial.println("a: analogRead(pin, anything) example:a3,128");
+      Serial.println("e: echo 0= off 1=on, default is off");
       Serial.println("m: repeat submenu");
       Serial.println("");
       break;
@@ -289,7 +302,6 @@ int help(int p1, int p2) {
       Serial.println("  Repeat MENU:");
       Serial.println("h: print this menu");
       Serial.println("t: Set interval time in millisecds (t1000, anything)");
-      Serial.println("!: activate on/off (a1 id on a0 is off");
       Serial.println("c: Set repeat function command");
       Serial.println("d: display repeat function parameters");
       Serial.println("n: # of times to repeat");
@@ -340,7 +352,7 @@ int setInterval(int p1, int p2) {
 
 // Sets nuber of tomes to repeat
 int setCount(int p1, int p2) {
-  repeatData.count = p1 +1;   // account for the 0 to 1 based differance
+  repeatData.count = p1 + 1;  // account for the 0 to 1 based differance
   Serial.print("SetCount: ");
   Serial.println((unsigned)p1);
   Serial.println("");
@@ -479,6 +491,9 @@ void initialize_main_menu(int select) {
       command_record[index].menu_command = 'a';
       command_record[index++].menu_function = &analog_read;
 
+      command_record[index].menu_command = 'e';
+      command_record[index++].menu_function = &echoFunction;
+
       command_record[index].menu_command = 'm';
       command_record[index++].menu_function = &repeatMenu;
 
@@ -492,10 +507,6 @@ void initialize_main_menu(int select) {
 
       command_record[index].menu_command = 't';
       command_record[index++].menu_function = &setInterval;
-
-      command_record[index].menu_command = '!';
-      command_record[index++].menu_function = &activateRepeat;
-
 
       command_record[index].menu_command = 'c';
 
